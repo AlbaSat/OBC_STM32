@@ -46,7 +46,7 @@ Welcome to the CubeSat On-Board Computer (OBC) Simulation project! This initiati
 - **Operating System:**
   - **FreeRTOS:** For task management and real-time operations.
 - **FAT FileSystem:**
-  - **FAT32:**  For efficient and lightweight memory managment.
+  - **FATFS:**  For efficient and lightweight memory managment.
 - **Communication Protocol:**
   - **libcsp:**  Cubesat Space Protocol library for reliable and efficient communication between subsystems and ground stations.
 - **Simulation Tools:**
@@ -82,7 +82,7 @@ The simulation environment replicates the key functionalities of the CubeSat's O
 
 1. **Clone the Repository:**
    ```bash
-   https://github.com/AlbaSat/OBC.git -b libcsp-integration --recurse-submodules
+   https://github.com/AlbaSat/OBC.git -b CUBE_IDE_auto_code --recurse-submodules
    cd OBC
    ```
 
@@ -125,7 +125,7 @@ Modify the following sections only.
    - The simulation should begin automatically upon reset.
 
 2. **Monitor Serial Output:**
-   - Open a serial terminal (e.g., PuTTY, Tera Term) to view real-time data from the simulated peripherals.
+   - Open a serial terminal (**serial_COM.py**) to view real-time data from the simulated peripherals.
    - Default settings: 115200 baud rate, 8 data bits, no parity, 1 stop bit.
 
 3. **Interacting with Simulated Peripherals:**
