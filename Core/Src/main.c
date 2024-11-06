@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdarg.h>  // Required for va_list, va_start, va_end
 #include <csp/csp.h>
+#include <csp/interfaces/csp_if_lo.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -175,6 +176,9 @@ int main(void)
 
   // Initialize CSP buffer system
   csp_buffer_init();
+
+  // Configure the CSP routing table to use the loopback interface
+  csp_rtable_set(0, 0, &csp_if_lo, CSP_NO_VIA_ADDRESS);  // Route all packets to the loopback interface
 
   // Create mutex before mounting
   myFileMutexHandle = osMutexNew(&myFileMutex_attributes);
