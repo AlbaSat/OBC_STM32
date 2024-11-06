@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <csp/csp.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,6 +79,18 @@ const osThreadAttr_t FAT_r_task_attributes = {
   .stack_size = sizeof(Task_FAT_r_Buffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for CSP_test */
+osThreadId_t CSP_testHandle;
+uint32_t CSP_testBuffer[ 512 ];
+osStaticThreadDef_t CSP_testControlBlock;
+const osThreadAttr_t CSP_test_attributes = {
+  .name = "CSP_test",
+  .cb_mem = &CSP_testControlBlock,
+  .cb_size = sizeof(CSP_testControlBlock),
+  .stack_mem = &CSP_testBuffer[0],
+  .stack_size = sizeof(CSP_testBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for myFileMutex */
 osMutexId_t myFileMutexHandle;
 osStaticMutexDef_t myFileMutexControlBlock;
@@ -105,6 +118,7 @@ static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void *argument);
 void StartTask_FAT_w(void *argument);
 void StartTask_FAT_r(void *argument);
+void StartTask_CSP_test(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -300,6 +314,9 @@ int main(void)
 
   /* creation of FAT_r_task */
   FAT_r_taskHandle = osThreadNew(StartTask_FAT_r, NULL, &FAT_r_task_attributes);
+
+  /* creation of CSP_test */
+  CSP_testHandle = osThreadNew(StartTask_CSP_test, NULL, &CSP_test_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -580,6 +597,25 @@ void StartTask_FAT_r(void *argument)
     osDelay(5000); // Read every 5 seconds
   }
   /* USER CODE END StartTask_FAT_r */
+}
+
+/* USER CODE BEGIN Header_StartTask_CSP_test */
+/**
+* @brief Function implementing the CSP_test thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_CSP_test */
+void StartTask_CSP_test(void *argument)
+{
+  /* USER CODE BEGIN StartTask_CSP_test */
+	csp_packet_t * packet_received = csp_buffer_get(100);
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask_CSP_test */
 }
 
 /**

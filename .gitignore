@@ -1,0 +1,24 @@
+# STM32CubeIDE build directories
+Debug/
+Release/
+
+# CubeMX generated files
+*.ioc
+*.launch
+
+# Object files, binaries, and ELF files
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.a
+*.axf
+*.srec
+
+# Build logs and Makefiles
+build.log
+makefile
+objects.list
+sources.list
