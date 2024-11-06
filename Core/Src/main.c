@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdarg.h>  // Required for va_list, va_start, va_end
 #include <csp/csp.h>
 /* USER CODE END Includes */
 
@@ -98,6 +99,14 @@ const osMutexAttr_t myFileMutex_attributes = {
   .name = "myFileMutex",
   .cb_mem = &myFileMutexControlBlock,
   .cb_size = sizeof(myFileMutexControlBlock),
+};
+/* Definitions for myPrintMutex */
+osMutexId_t myPrintMutexHandle;
+osStaticMutexDef_t myPrintMutexControlBlock;
+const osMutexAttr_t myPrintMutex_attributes = {
+  .name = "myPrintMutex",
+  .cb_mem = &myPrintMutexControlBlock,
+  .cb_size = sizeof(myPrintMutexControlBlock),
 };
 /* Definitions for file_semaphore */
 osSemaphoreId_t file_semaphoreHandle;
@@ -292,6 +301,9 @@ int main(void)
   /* creation of myFileMutex */
   myFileMutexHandle = osMutexNew(&myFileMutex_attributes);
 
+  /* creation of myPrintMutex */
+  myPrintMutexHandle = osMutexNew(&myPrintMutex_attributes);
+
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
@@ -481,6 +493,24 @@ int _write(int file, char *ptr, int len)
   }
   return len;
 }
+
+// Thread safe print function
+void safePrint(const char* format, ...) {
+    va_list args;
+
+    // Acquire the print mutex before printing
+    if (osMutexAcquire(myPrintMutexHandle, osWaitForever) == osOK) {
+        va_start(args, format);
+        vprintf(format, args);  // Use vprintf to handle variable arguments
+        va_end(args);
+
+        // Release the print mutex after printing
+        osMutexRelease(myPrintMutexHandle);
+    } else {
+        // Handle mutex acquisition failure (optional)
+        printf("Failed to acquire print mutex!\n\r");
+    }
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -529,15 +559,15 @@ void StartTask_FAT_w(void *argument)
         // Write data to the file
         fres = f_write(&file, write_data, sizeof(write_data) - 1, &bw);
         if (fres == FR_OK && bw == sizeof(write_data) - 1) {
-          printf("FAT_w_task: Data written successfully.\r\n");
+          safePrint("FAT_w_task: Data written successfully.\r\n");
         } else {
-          printf("FAT_w_task: Write error! Error code: %d\r\n", fres);
+          safePrint("FAT_w_task: Write error! Error code: %d\r\n", fres);
         }
 
         // Close the file after writing
         f_close(&file);
       } else {
-        printf("FAT_w_task: f_open failed! Error code: %d\r\n", fres);
+        safePrint("FAT_w_task: f_open failed! Error code: %d\r\n", fres);
       }
 
       // Release the mutex after accessing the file
@@ -584,15 +614,15 @@ void StartTask_FAT_r(void *argument)
           fres = f_read(&file, read_data, sizeof(read_data) - 1, &br);
           if (fres == FR_OK) {
             read_data[br] = '\0'; // Null-terminate the string
-            printf("FAT_r_task: Data read: %s\r\n", read_data);
+            safePrint("FAT_r_task: Data read: %s\r\n", read_data);
           } else {
-            printf("FAT_r_task: Read error! Error code: %d\r\n", fres);
+            safePrint("FAT_r_task: Read error! Error code: %d\r\n", fres);
           }
 
           // Close the file after reading
           f_close(&file);
         } else {
-          printf("FAT_r_task: f_open failed! Error code: %d\r\n", fres);
+          safePrint("FAT_r_task: f_open failed! Error code: %d\r\n", fres);
         }
 
         // Release the mutex after file access
@@ -617,11 +647,12 @@ void StartTask_CSP_test(void *argument)
 {
   /* USER CODE BEGIN StartTask_CSP_test */
 	csp_packet_t * packet_received = csp_buffer_get(8);
+	char* content = "Initial value";
   /* Infinite loop */
   for(;;)
   {
-    osDelay(10000);
-    printf("Inside\n\r");
+    osDelay(5000);
+    safePrint("CSP_test_task: Packet content: %s\r\n", content);
   }
   /* USER CODE END StartTask_CSP_test */
 }
