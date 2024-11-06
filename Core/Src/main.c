@@ -81,7 +81,7 @@ const osThreadAttr_t FAT_r_task_attributes = {
 };
 /* Definitions for CSP_test */
 osThreadId_t CSP_testHandle;
-uint32_t CSP_testBuffer[ 512 ];
+uint32_t CSP_testBuffer[ 1024 ];
 osStaticThreadDef_t CSP_testControlBlock;
 const osThreadAttr_t CSP_test_attributes = {
   .name = "CSP_test",
@@ -160,6 +160,13 @@ int main(void)
   MX_USART2_UART_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+
+  // Initialize CSP
+  csp_init();  // Initialize the CSP protocol stack
+
+  // Initialize CSP buffer system
+  csp_buffer_init();
+
   // Create mutex before mounting
   myFileMutexHandle = osMutexNew(&myFileMutex_attributes);
   if(myFileMutexHandle == NULL)
@@ -609,11 +616,12 @@ void StartTask_FAT_r(void *argument)
 void StartTask_CSP_test(void *argument)
 {
   /* USER CODE BEGIN StartTask_CSP_test */
-	csp_packet_t * packet_received = csp_buffer_get(100);
+	csp_packet_t * packet_received = csp_buffer_get(8);
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(10000);
+    printf("Inside\n\r");
   }
   /* USER CODE END StartTask_CSP_test */
 }
