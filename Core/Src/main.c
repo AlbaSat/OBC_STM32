@@ -94,6 +94,30 @@ const osThreadAttr_t CSP_test_attributes = {
   .stack_size = sizeof(CSP_testBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for communTask */
+osThreadId_t communTaskHandle;
+uint32_t communTaskBuffer[ 512 ];
+osStaticThreadDef_t communTaskControlBlock;
+const osThreadAttr_t communTask_attributes = {
+  .name = "communTask",
+  .cb_mem = &communTaskControlBlock,
+  .cb_size = sizeof(communTaskControlBlock),
+  .stack_mem = &communTaskBuffer[0],
+  .stack_size = sizeof(communTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for cmdHandleTask */
+osThreadId_t cmdHandleTaskHandle;
+uint32_t cmdHandleTaskBuffer[ 512 ];
+osStaticThreadDef_t cmdHandleTaskControlBlock;
+const osThreadAttr_t cmdHandleTask_attributes = {
+  .name = "cmdHandleTask",
+  .cb_mem = &cmdHandleTaskControlBlock,
+  .cb_size = sizeof(cmdHandleTaskControlBlock),
+  .stack_mem = &cmdHandleTaskBuffer[0],
+  .stack_size = sizeof(cmdHandleTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for commandQueue */
 osMessageQueueId_t commandQueueHandle;
 uint8_t commandQueueBuffer[ 16 * sizeof( uint16_t ) ];
@@ -152,6 +176,8 @@ void StartDefaultTask(void *argument);
 void StartTask_FAT_w(void *argument);
 void StartTask_FAT_r(void *argument);
 void StartTask_CSP_test(void *argument);
+void StartTask_communTask(void *argument);
+void StartTask_cmdHandle(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -370,6 +396,12 @@ int main(void)
 
   /* creation of CSP_test */
   CSP_testHandle = osThreadNew(StartTask_CSP_test, NULL, &CSP_test_attributes);
+
+  /* creation of communTask */
+  communTaskHandle = osThreadNew(StartTask_communTask, NULL, &communTask_attributes);
+
+  /* creation of cmdHandleTask */
+  cmdHandleTaskHandle = osThreadNew(StartTask_cmdHandle, NULL, &cmdHandleTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -689,6 +721,77 @@ void StartTask_CSP_test(void *argument)
     safePrint("CSP_test_task: Packet content: %s\r\n", content);
   }
   /* USER CODE END StartTask_CSP_test */
+}
+
+/* USER CODE BEGIN Header_StartTask_communTask */
+/**
+* @brief This task Receives commands and places them in the Command Queue.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_communTask */
+void StartTask_communTask(void *argument)
+{
+  /* USER CODE BEGIN StartTask_communTask */
+    csp_packet_t *packet;
+  /* Infinite loop */
+  for(;;)
+  {
+	/* Wait for a packet from CSP */
+	packet = csp_buffer_get(100);  // Get buffer for CSP communication (100 bytes)
+	if (packet == NULL) {
+	  osDelay(100);  // No packet available, wait
+	  continue;
+	}
+
+	//TODO: place a semaphore when enqueing or increase priority
+	/* Simulate received command (e.g., command ID 1) */
+	uint16_t command = 1;  // For example, command ID 1
+	osMessageQueuePut(commandQueueHandle, &command, 0, osWaitForever);  // Send command to Command Queue
+
+	/* Free the CSP packet */
+	csp_buffer_free(packet);
+
+	osDelay(1000);  // Delay for next communication
+  }
+  /* USER CODE END StartTask_communTask */
+}
+
+/* USER CODE BEGIN Header_StartTask_cmdHandle */
+/**
+* @brief Function implementing the cmdHandleTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_cmdHandle */
+void StartTask_cmdHandle(void *argument)
+{
+  /* USER CODE BEGIN StartTask_cmdHandle */
+    uint16_t command;
+  /* Infinite loop */
+  for(;;)
+  {
+	/* Wait for a command in the Command Queue */
+	if (osMessageQueueGet(commandQueueHandle, &command, NULL, osWaitForever) == osOK) {
+	  /* Process the command and dispatch to payload tasks */
+	  switch (command) {
+		  case 1:
+			  safePrint("Command 1 received, starting PayloadTask1.\n");
+			  //osThreadNew(PayloadTask1, NULL, NULL);
+			  break;
+		  case 2:
+			  safePrint("Command 2 received, starting PayloadTask2.\n");
+			  //osThreadNew(PayloadTask2, NULL, NULL);
+			  break;
+		  default:
+			  safePrint("Unknown command received: %lu\n", command);
+			  break;
+	  }
+	}
+
+	osDelay(100);  // Delay to avoid CPU overuse
+  }
+  /* USER CODE END StartTask_cmdHandle */
 }
 
 /**
