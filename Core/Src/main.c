@@ -82,18 +82,6 @@ const osThreadAttr_t FAT_r_task_attributes = {
   .stack_size = sizeof(Task_FAT_r_Buffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for CSP_test */
-osThreadId_t CSP_testHandle;
-uint32_t CSP_testBuffer[ 1024 ];
-osStaticThreadDef_t CSP_testControlBlock;
-const osThreadAttr_t CSP_test_attributes = {
-  .name = "CSP_test",
-  .cb_mem = &CSP_testControlBlock,
-  .cb_size = sizeof(CSP_testControlBlock),
-  .stack_mem = &CSP_testBuffer[0],
-  .stack_size = sizeof(CSP_testBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* Definitions for communTask */
 osThreadId_t communTaskHandle;
 uint32_t communTaskBuffer[ 512 ];
@@ -116,6 +104,30 @@ const osThreadAttr_t cmdHandleTask_attributes = {
   .cb_size = sizeof(cmdHandleTaskControlBlock),
   .stack_mem = &cmdHandleTaskBuffer[0],
   .stack_size = sizeof(cmdHandleTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for cspServer */
+osThreadId_t cspServerHandle;
+uint32_t cspServerBuffer[ 512 ];
+osStaticThreadDef_t cspServerControlBlock;
+const osThreadAttr_t cspServer_attributes = {
+  .name = "cspServer",
+  .cb_mem = &cspServerControlBlock,
+  .cb_size = sizeof(cspServerControlBlock),
+  .stack_mem = &cspServerBuffer[0],
+  .stack_size = sizeof(cspServerBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for cspClient */
+osThreadId_t cspClientHandle;
+uint32_t cspClientBuffer[ 512 ];
+osStaticThreadDef_t cspClientControlBlock;
+const osThreadAttr_t cspClient_attributes = {
+  .name = "cspClient",
+  .cb_mem = &cspClientControlBlock,
+  .cb_size = sizeof(cspClientControlBlock),
+  .stack_mem = &cspClientBuffer[0],
+  .stack_size = sizeof(cspClientBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for commandQueue */
@@ -175,9 +187,10 @@ static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void *argument);
 void StartTask_FAT_w(void *argument);
 void StartTask_FAT_r(void *argument);
-void StartTask_CSP_test(void *argument);
 void StartTask_communTask(void *argument);
 void StartTask_cmdHandle(void *argument);
+void StartTask_cspServer(void *argument);
+void StartTas_cspClient(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -394,14 +407,17 @@ int main(void)
   /* creation of FAT_r_task */
   FAT_r_taskHandle = osThreadNew(StartTask_FAT_r, NULL, &FAT_r_task_attributes);
 
-  /* creation of CSP_test */
-  CSP_testHandle = osThreadNew(StartTask_CSP_test, NULL, &CSP_test_attributes);
-
   /* creation of communTask */
   communTaskHandle = osThreadNew(StartTask_communTask, NULL, &communTask_attributes);
 
   /* creation of cmdHandleTask */
   cmdHandleTaskHandle = osThreadNew(StartTask_cmdHandle, NULL, &cmdHandleTask_attributes);
+
+  /* creation of cspServer */
+  cspServerHandle = osThreadNew(StartTask_cspServer, NULL, &cspServer_attributes);
+
+  /* creation of cspClient */
+  cspClientHandle = osThreadNew(StartTas_cspClient, NULL, &cspClient_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -702,27 +718,6 @@ void StartTask_FAT_r(void *argument)
   /* USER CODE END StartTask_FAT_r */
 }
 
-/* USER CODE BEGIN Header_StartTask_CSP_test */
-/**
-* @brief Function implementing the CSP_test thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartTask_CSP_test */
-void StartTask_CSP_test(void *argument)
-{
-  /* USER CODE BEGIN StartTask_CSP_test */
-	csp_packet_t * packet_received = csp_buffer_get(8);
-	char* content = "Initial value";
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(5000);
-    safePrint("CSP_test_task: Packet content: %s\r\n", content);
-  }
-  /* USER CODE END StartTask_CSP_test */
-}
-
 /* USER CODE BEGIN Header_StartTask_communTask */
 /**
 * @brief This task Receives commands and places them in the Command Queue.
@@ -791,6 +786,42 @@ void StartTask_cmdHandle(void *argument)
 	osDelay(100);  // Delay to avoid CPU overuse
   }
   /* USER CODE END StartTask_cmdHandle */
+}
+
+/* USER CODE BEGIN Header_StartTask_cspServer */
+/**
+* @brief Function implementing the cspServer thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_cspServer */
+void StartTask_cspServer(void *argument)
+{
+  /* USER CODE BEGIN StartTask_cspServer */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask_cspServer */
+}
+
+/* USER CODE BEGIN Header_StartTas_cspClient */
+/**
+* @brief Function implementing the cspClient thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTas_cspClient */
+void StartTas_cspClient(void *argument)
+{
+  /* USER CODE BEGIN StartTas_cspClient */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTas_cspClient */
 }
 
 /**
