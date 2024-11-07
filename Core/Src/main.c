@@ -31,6 +31,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticQueue_t osStaticMessageQDef_t;
 typedef StaticSemaphore_t osStaticMutexDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
@@ -92,6 +93,28 @@ const osThreadAttr_t CSP_test_attributes = {
   .stack_mem = &CSP_testBuffer[0],
   .stack_size = sizeof(CSP_testBuffer),
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for commandQueue */
+osMessageQueueId_t commandQueueHandle;
+uint8_t commandQueueBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t commandQueueControlBlock;
+const osMessageQueueAttr_t commandQueue_attributes = {
+  .name = "commandQueue",
+  .cb_mem = &commandQueueControlBlock,
+  .cb_size = sizeof(commandQueueControlBlock),
+  .mq_mem = &commandQueueBuffer,
+  .mq_size = sizeof(commandQueueBuffer)
+};
+/* Definitions for dataQueue */
+osMessageQueueId_t dataQueueHandle;
+uint8_t dataQueueBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t dataQueueControlBlock;
+const osMessageQueueAttr_t dataQueue_attributes = {
+  .name = "dataQueue",
+  .cb_mem = &dataQueueControlBlock,
+  .cb_size = sizeof(dataQueueControlBlock),
+  .mq_mem = &dataQueueBuffer,
+  .mq_size = sizeof(dataQueueBuffer)
 };
 /* Definitions for myFileMutex */
 osMutexId_t myFileMutexHandle;
@@ -323,6 +346,13 @@ int main(void)
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of commandQueue */
+  commandQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &commandQueue_attributes);
+
+  /* creation of dataQueue */
+  dataQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &dataQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
