@@ -82,8 +82,14 @@ The simulation environment replicates the key functionalities of the CubeSat's O
 
 1. **Clone the Repository:**
    ```bash
-   https://github.com/AlbaSat/OBC.git -b CUBE_IDE_auto_code --recurse-submodules
-   cd OBC
+   # Clone the repository with the recurse-submodules flag
+   git clone https://github.com/AlbaSat/OBC_STM32.git -b CUBE_IDE_auto_code --recurse-submodules
+
+   # Rename the folder OBC_STM32 to OBC_new for CUBEIDE consistency
+   mv OBC_STM32 OBC_new
+
+   # Navigate into the renamed folder
+   cd OBC_new
    ```
 
 2. **Open the Project in STM32CubeIDE:**
