@@ -3,7 +3,6 @@ Debug/
 Release/
 
 # CubeMX generated files
-*.ioc
 *.launch
 
 # Object files, binaries, and ELF files (but keep track of libcsp.a)
