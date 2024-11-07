@@ -744,7 +744,6 @@ void StartTask_communTask(void *argument)
 	  continue;
 	}
 
-	//TODO: place a semaphore when enqueing or increase priority
 	/* Simulate received command (e.g., command ID 1) */
 	uint16_t command = 1;  // For example, command ID 1
 	osMessageQueuePut(commandQueueHandle, &command, 0, osWaitForever);  // Send command to Command Queue
