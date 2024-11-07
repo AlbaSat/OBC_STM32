@@ -6,14 +6,13 @@ Release/
 *.ioc
 *.launch
 
-# Object files, binaries, and ELF files
+# Object files, binaries, and ELF files (but keep track of libcsp.a)
 *.o
 *.d
 *.elf
 *.bin
 *.hex
 *.map
-*.a
 *.axf
 *.srec
 
