@@ -11,7 +11,7 @@
 
 1. Navigate to the libcsp directory in your workspace:
    ```
-   cd <your_workspace>/OBC/Libraries/libcsp
+   cd <your_workspace>/OBC_new/Libraries/libcsp
    ```
 
 2. Configure WAF (replace paths with your actual directories):
