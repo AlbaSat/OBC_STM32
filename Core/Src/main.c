@@ -726,23 +726,13 @@ void StartTask_FAT_r(void *argument)
 void StartTask_communTask(void *argument)
 {
   /* USER CODE BEGIN StartTask_communTask */
-    csp_packet_t *packet;
+
   /* Infinite loop */
   for(;;)
   {
-	/* Wait for a packet from CSP */
-	packet = csp_buffer_get(100);  // Get buffer for CSP communication (100 bytes)
-	if (packet == NULL) {
-	  osDelay(100);  // No packet available, wait
-	  continue;
-	}
-
 	/* Simulate received command (e.g., command ID 1) */
 	uint16_t command = 1;  // For example, command ID 1
 	osMessageQueuePut(commandQueueHandle, &command, 0, osWaitForever);  // Send command to Command Queue
-
-	/* Free the CSP packet */
-	csp_buffer_free(packet);
 
 	osDelay(1000);  // Delay for next communication
   }
