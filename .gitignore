@@ -20,3 +20,6 @@ build.log
 makefile
 objects.list
 sources.list
+
+# Language settings
+.settings/language.settings.xml
