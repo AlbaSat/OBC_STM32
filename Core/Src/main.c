@@ -152,6 +152,28 @@ const osMessageQueueAttr_t dataQueue_attributes = {
   .mq_mem = &dataQueueBuffer,
   .mq_size = sizeof(dataQueueBuffer)
 };
+/* Definitions for TTQ */
+osMessageQueueId_t TTQHandle;
+uint8_t TTQBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t TTQControlBlock;
+const osMessageQueueAttr_t TTQ_attributes = {
+  .name = "TTQ",
+  .cb_mem = &TTQControlBlock,
+  .cb_size = sizeof(TTQControlBlock),
+  .mq_mem = &TTQBuffer,
+  .mq_size = sizeof(TTQBuffer)
+};
+/* Definitions for errorQueue */
+osMessageQueueId_t errorQueueHandle;
+uint8_t errorQueueBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t errorQueueControlBlock;
+const osMessageQueueAttr_t errorQueue_attributes = {
+  .name = "errorQueue",
+  .cb_mem = &errorQueueControlBlock,
+  .cb_size = sizeof(errorQueueControlBlock),
+  .mq_mem = &errorQueueBuffer,
+  .mq_size = sizeof(errorQueueBuffer)
+};
 /* Definitions for myFileMutex */
 osMutexId_t myFileMutexHandle;
 osStaticMutexDef_t myFileMutexControlBlock;
@@ -207,6 +229,7 @@ void StartTas_cspClient(void *argument);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -393,6 +416,12 @@ int main(void)
   /* creation of dataQueue */
   dataQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &dataQueue_attributes);
 
+  /* creation of TTQ */
+  TTQHandle = osMessageQueueNew (16, sizeof(uint16_t), &TTQ_attributes);
+
+  /* creation of errorQueue */
+  errorQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &errorQueue_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -431,6 +460,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
