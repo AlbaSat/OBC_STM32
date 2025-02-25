@@ -32,6 +32,7 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
+typedef StaticTimer_t osStaticTimerDef_t;
 typedef StaticSemaphore_t osStaticMutexDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
@@ -49,6 +50,8 @@ typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+
 UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
@@ -150,6 +153,44 @@ const osMessageQueueAttr_t errorQueue_attributes = {
   .mq_mem = &errorQueueBuffer,
   .mq_size = sizeof(errorQueueBuffer)
 };
+/* Definitions for TC */
+osMessageQueueId_t TCHandle;
+uint8_t TCBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t TCControlBlock;
+const osMessageQueueAttr_t TC_attributes = {
+  .name = "TC",
+  .cb_mem = &TCControlBlock,
+  .cb_size = sizeof(TCControlBlock),
+  .mq_mem = &TCBuffer,
+  .mq_size = sizeof(TCBuffer)
+};
+/* Definitions for GsQueue */
+osMessageQueueId_t GsQueueHandle;
+uint8_t GsQueueBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t GsQueueControlBlock;
+const osMessageQueueAttr_t GsQueue_attributes = {
+  .name = "GsQueue",
+  .cb_mem = &GsQueueControlBlock,
+  .cb_size = sizeof(GsQueueControlBlock),
+  .mq_mem = &GsQueueBuffer,
+  .mq_size = sizeof(GsQueueBuffer)
+};
+/* Definitions for DetumblingTimer */
+osTimerId_t DetumblingTimerHandle;
+osStaticTimerDef_t DetumblingTimerControlBlock;
+const osTimerAttr_t DetumblingTimer_attributes = {
+  .name = "DetumblingTimer",
+  .cb_mem = &DetumblingTimerControlBlock,
+  .cb_size = sizeof(DetumblingTimerControlBlock),
+};
+/* Definitions for MasterTimer */
+osTimerId_t MasterTimerHandle;
+osStaticTimerDef_t MasterControlBlock;
+const osTimerAttr_t MasterTimer_attributes = {
+  .name = "MasterTimer",
+  .cb_mem = &MasterControlBlock,
+  .cb_size = sizeof(MasterControlBlock),
+};
 /* Definitions for myFileMutex */
 osMutexId_t myFileMutexHandle;
 osStaticMutexDef_t myFileMutexControlBlock;
@@ -182,11 +223,14 @@ const osSemaphoreAttr_t file_semaphore_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_RTC_Init(void);
 void StartDefaultTask(void *argument);
 void StartTask_FAT_w(void *argument);
 void StartTask_FAT_r(void *argument);
 void StartTask_communTask(void *argument);
 void StartTask_cmdHandle(void *argument);
+void Callback01(void *argument);
+void Callback02(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -228,6 +272,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_FATFS_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
   // Initialize CSP
@@ -379,6 +424,13 @@ int main(void)
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
+  /* Create the timer(s) */
+  /* creation of DetumblingTimer */
+  DetumblingTimerHandle = osTimerNew(Callback01, osTimerPeriodic, NULL, &DetumblingTimer_attributes);
+
+  /* creation of MasterTimer */
+  MasterTimerHandle = osTimerNew(Callback02, osTimerPeriodic, NULL, &MasterTimer_attributes);
+
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
@@ -395,6 +447,12 @@ int main(void)
 
   /* creation of errorQueue */
   errorQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &errorQueue_attributes);
+
+  /* creation of TC */
+  TCHandle = osMessageQueueNew (16, sizeof(uint16_t), &TC_attributes);
+
+  /* creation of GsQueue */
+  GsQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &GsQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -457,9 +515,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 16;
@@ -484,6 +543,69 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_TUESDAY;
+  sDate.Month = RTC_MONTH_FEBRUARY;
+  sDate.Date = 0x25;
+  sDate.Year = 0x25;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -774,6 +896,22 @@ void StartTask_cmdHandle(void *argument)
 	osDelay(100);  // Delay to avoid CPU overuse
   }
   /* USER CODE END StartTask_cmdHandle */
+}
+
+/* Callback01 function */
+void Callback01(void *argument)
+{
+  /* USER CODE BEGIN Callback01 */
+
+  /* USER CODE END Callback01 */
+}
+
+/* Callback02 function */
+void Callback02(void *argument)
+{
+  /* USER CODE BEGIN Callback02 */
+
+  /* USER CODE END Callback02 */
 }
 
 /**
