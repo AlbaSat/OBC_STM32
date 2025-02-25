@@ -32,6 +32,7 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
+typedef StaticTimer_t osStaticTimerDef_t;
 typedef StaticSemaphore_t osStaticMutexDef_t;
 typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
@@ -49,6 +50,8 @@ typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+
 UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
@@ -82,16 +85,28 @@ const osThreadAttr_t FAT_r_task_attributes = {
   .stack_size = sizeof(Task_FAT_r_Buffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for CSP_test */
-osThreadId_t CSP_testHandle;
-uint32_t CSP_testBuffer[ 1024 ];
-osStaticThreadDef_t CSP_testControlBlock;
-const osThreadAttr_t CSP_test_attributes = {
-  .name = "CSP_test",
-  .cb_mem = &CSP_testControlBlock,
-  .cb_size = sizeof(CSP_testControlBlock),
-  .stack_mem = &CSP_testBuffer[0],
-  .stack_size = sizeof(CSP_testBuffer),
+/* Definitions for communTask */
+osThreadId_t communTaskHandle;
+uint32_t communTaskBuffer[ 512 ];
+osStaticThreadDef_t communTaskControlBlock;
+const osThreadAttr_t communTask_attributes = {
+  .name = "communTask",
+  .cb_mem = &communTaskControlBlock,
+  .cb_size = sizeof(communTaskControlBlock),
+  .stack_mem = &communTaskBuffer[0],
+  .stack_size = sizeof(communTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for cmdHandleTask */
+osThreadId_t cmdHandleTaskHandle;
+uint32_t cmdHandleTaskBuffer[ 512 ];
+osStaticThreadDef_t cmdHandleTaskControlBlock;
+const osThreadAttr_t cmdHandleTask_attributes = {
+  .name = "cmdHandleTask",
+  .cb_mem = &cmdHandleTaskControlBlock,
+  .cb_size = sizeof(cmdHandleTaskControlBlock),
+  .stack_mem = &cmdHandleTaskBuffer[0],
+  .stack_size = sizeof(cmdHandleTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for commandQueue */
@@ -115,6 +130,66 @@ const osMessageQueueAttr_t dataQueue_attributes = {
   .cb_size = sizeof(dataQueueControlBlock),
   .mq_mem = &dataQueueBuffer,
   .mq_size = sizeof(dataQueueBuffer)
+};
+/* Definitions for TTQ */
+osMessageQueueId_t TTQHandle;
+uint8_t TTQBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t TTQControlBlock;
+const osMessageQueueAttr_t TTQ_attributes = {
+  .name = "TTQ",
+  .cb_mem = &TTQControlBlock,
+  .cb_size = sizeof(TTQControlBlock),
+  .mq_mem = &TTQBuffer,
+  .mq_size = sizeof(TTQBuffer)
+};
+/* Definitions for errorQueue */
+osMessageQueueId_t errorQueueHandle;
+uint8_t errorQueueBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t errorQueueControlBlock;
+const osMessageQueueAttr_t errorQueue_attributes = {
+  .name = "errorQueue",
+  .cb_mem = &errorQueueControlBlock,
+  .cb_size = sizeof(errorQueueControlBlock),
+  .mq_mem = &errorQueueBuffer,
+  .mq_size = sizeof(errorQueueBuffer)
+};
+/* Definitions for TC */
+osMessageQueueId_t TCHandle;
+uint8_t TCBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t TCControlBlock;
+const osMessageQueueAttr_t TC_attributes = {
+  .name = "TC",
+  .cb_mem = &TCControlBlock,
+  .cb_size = sizeof(TCControlBlock),
+  .mq_mem = &TCBuffer,
+  .mq_size = sizeof(TCBuffer)
+};
+/* Definitions for GsQueue */
+osMessageQueueId_t GsQueueHandle;
+uint8_t GsQueueBuffer[ 16 * sizeof( uint16_t ) ];
+osStaticMessageQDef_t GsQueueControlBlock;
+const osMessageQueueAttr_t GsQueue_attributes = {
+  .name = "GsQueue",
+  .cb_mem = &GsQueueControlBlock,
+  .cb_size = sizeof(GsQueueControlBlock),
+  .mq_mem = &GsQueueBuffer,
+  .mq_size = sizeof(GsQueueBuffer)
+};
+/* Definitions for DetumblingTimer */
+osTimerId_t DetumblingTimerHandle;
+osStaticTimerDef_t DetumblingTimerControlBlock;
+const osTimerAttr_t DetumblingTimer_attributes = {
+  .name = "DetumblingTimer",
+  .cb_mem = &DetumblingTimerControlBlock,
+  .cb_size = sizeof(DetumblingTimerControlBlock),
+};
+/* Definitions for MasterTimer */
+osTimerId_t MasterTimerHandle;
+osStaticTimerDef_t MasterControlBlock;
+const osTimerAttr_t MasterTimer_attributes = {
+  .name = "MasterTimer",
+  .cb_mem = &MasterControlBlock,
+  .cb_size = sizeof(MasterControlBlock),
 };
 /* Definitions for myFileMutex */
 osMutexId_t myFileMutexHandle;
@@ -148,10 +223,14 @@ const osSemaphoreAttr_t file_semaphore_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_RTC_Init(void);
 void StartDefaultTask(void *argument);
 void StartTask_FAT_w(void *argument);
 void StartTask_FAT_r(void *argument);
-void StartTask_CSP_test(void *argument);
+void StartTask_communTask(void *argument);
+void StartTask_cmdHandle(void *argument);
+void Callback01(void *argument);
+void Callback02(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -168,6 +247,7 @@ void StartTask_CSP_test(void *argument);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -192,6 +272,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_FATFS_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
   // Initialize CSP
@@ -343,6 +424,13 @@ int main(void)
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
+  /* Create the timer(s) */
+  /* creation of DetumblingTimer */
+  DetumblingTimerHandle = osTimerNew(Callback01, osTimerPeriodic, NULL, &DetumblingTimer_attributes);
+
+  /* creation of MasterTimer */
+  MasterTimerHandle = osTimerNew(Callback02, osTimerPeriodic, NULL, &MasterTimer_attributes);
+
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
@@ -353,6 +441,18 @@ int main(void)
 
   /* creation of dataQueue */
   dataQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &dataQueue_attributes);
+
+  /* creation of TTQ */
+  TTQHandle = osMessageQueueNew (16, sizeof(uint16_t), &TTQ_attributes);
+
+  /* creation of errorQueue */
+  errorQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &errorQueue_attributes);
+
+  /* creation of TC */
+  TCHandle = osMessageQueueNew (16, sizeof(uint16_t), &TC_attributes);
+
+  /* creation of GsQueue */
+  GsQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &GsQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -368,8 +468,11 @@ int main(void)
   /* creation of FAT_r_task */
   FAT_r_taskHandle = osThreadNew(StartTask_FAT_r, NULL, &FAT_r_task_attributes);
 
-  /* creation of CSP_test */
-  CSP_testHandle = osThreadNew(StartTask_CSP_test, NULL, &CSP_test_attributes);
+  /* creation of communTask */
+  communTaskHandle = osThreadNew(StartTask_communTask, NULL, &communTask_attributes);
+
+  /* creation of cmdHandleTask */
+  cmdHandleTaskHandle = osThreadNew(StartTask_cmdHandle, NULL, &cmdHandleTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -383,6 +486,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -411,9 +515,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 16;
@@ -438,6 +543,69 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_TUESDAY;
+  sDate.Month = RTC_MONTH_FEBRUARY;
+  sDate.Date = 0x25;
+  sDate.Year = 0x25;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -531,9 +699,24 @@ int _write(int file, char *ptr, int len)
 // Thread safe print function
 void safePrint(const char* format, ...) {
     va_list args;
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    char timestamp[32];
 
     // Acquire the print mutex before printing
     if (osMutexAcquire(myPrintMutexHandle, osWaitForever) == osOK) {
+    	 // Get current time and date
+		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+		HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN); // Need to call GetDate after GetTime
+
+		// Format timestamp
+        sprintf(timestamp, "[%02d-%02d-%02d %02d:%02d:%02d] ",
+                sDate.Year, sDate.Month, sDate.Date,
+                sTime.Hours, sTime.Minutes, sTime.Seconds);
+
+        // Print timestamp
+        printf("%s", timestamp);
+
         va_start(args, format);
         vprintf(format, args);  // Use vprintf to handle variable arguments
         va_end(args);
@@ -670,25 +853,80 @@ void StartTask_FAT_r(void *argument)
   /* USER CODE END StartTask_FAT_r */
 }
 
-/* USER CODE BEGIN Header_StartTask_CSP_test */
+/* USER CODE BEGIN Header_StartTask_communTask */
 /**
-* @brief Function implementing the CSP_test thread.
+* @brief This task Receives commands and places them in the Command Queue.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartTask_CSP_test */
-void StartTask_CSP_test(void *argument)
+/* USER CODE END Header_StartTask_communTask */
+void StartTask_communTask(void *argument)
 {
-  /* USER CODE BEGIN StartTask_CSP_test */
-	csp_packet_t * packet_received = csp_buffer_get(8);
-	char* content = "Initial value";
+  /* USER CODE BEGIN StartTask_communTask */
+
   /* Infinite loop */
   for(;;)
   {
-    osDelay(5000);
-    safePrint("CSP_test_task: Packet content: %s\r\n", content);
+	/* Simulate received command (e.g., command ID 1) */
+	uint16_t command = 1;  // For example, command ID 1
+	osMessageQueuePut(commandQueueHandle, &command, 0, osWaitForever);  // Send command to Command Queue
+
+	osDelay(1000);  // Delay for next communication
   }
-  /* USER CODE END StartTask_CSP_test */
+  /* USER CODE END StartTask_communTask */
+}
+
+/* USER CODE BEGIN Header_StartTask_cmdHandle */
+/**
+* @brief Function implementing the cmdHandleTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_cmdHandle */
+void StartTask_cmdHandle(void *argument)
+{
+  /* USER CODE BEGIN StartTask_cmdHandle */
+    uint16_t command;
+  /* Infinite loop */
+  for(;;)
+  {
+	/* Wait for a command in the Command Queue */
+	if (osMessageQueueGet(commandQueueHandle, &command, NULL, osWaitForever) == osOK) {
+	  /* Process the command and dispatch to payload tasks */
+	  switch (command) {
+		  case 1:
+			  safePrint("Command 1 received, starting PayloadTask1.\n");
+			  //osThreadNew(PayloadTask1, NULL, NULL);
+			  break;
+		  case 2:
+			  safePrint("Command 2 received, starting PayloadTask2.\n");
+			  //osThreadNew(PayloadTask2, NULL, NULL);
+			  break;
+		  default:
+			  safePrint("Unknown command received: %lu\n", command);
+			  break;
+	  }
+	}
+
+	osDelay(100);  // Delay to avoid CPU overuse
+  }
+  /* USER CODE END StartTask_cmdHandle */
+}
+
+/* Callback01 function */
+void Callback01(void *argument)
+{
+  /* USER CODE BEGIN Callback01 */
+
+  /* USER CODE END Callback01 */
+}
+
+/* Callback02 function */
+void Callback02(void *argument)
+{
+  /* USER CODE BEGIN Callback02 */
+
+  /* USER CODE END Callback02 */
 }
 
 /**

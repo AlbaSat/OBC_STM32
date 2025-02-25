@@ -58,7 +58,7 @@
 /* #define HAL_IWDG_MODULE_ENABLED */
 /* #define HAL_LTDC_MODULE_ENABLED */
 /* #define HAL_RNG_MODULE_ENABLED */
-/* #define HAL_RTC_MODULE_ENABLED */
+#define HAL_RTC_MODULE_ENABLED
 /* #define HAL_SAI_MODULE_ENABLED */
 /* #define HAL_SD_MODULE_ENABLED */
 /* #define HAL_MMC_MODULE_ENABLED */
@@ -214,7 +214,7 @@
 #define MAC_ADDR5   0U
 
 /* Definition of the Ethernet driver buffers size and count */
-#define ETH_RX_BUF_SIZE                 /* buffer size for receive               */
+#define ETH_RX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for receive               */
 #define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
 #define ETH_RXBUFNB                    4U       /* 4 Rx buffers of size ETH_RX_BUF_SIZE  */
 #define ETH_TXBUFNB                    4U       /* 4 Tx buffers of size ETH_TX_BUF_SIZE  */
