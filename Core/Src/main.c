@@ -699,9 +699,24 @@ int _write(int file, char *ptr, int len)
 // Thread safe print function
 void safePrint(const char* format, ...) {
     va_list args;
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    char timestamp[32];
 
     // Acquire the print mutex before printing
     if (osMutexAcquire(myPrintMutexHandle, osWaitForever) == osOK) {
+    	 // Get current time and date
+		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+		HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN); // Need to call GetDate after GetTime
+
+		// Format timestamp
+        sprintf(timestamp, "[%02d-%02d-%02d %02d:%02d:%02d] ",
+                sDate.Year, sDate.Month, sDate.Date,
+                sTime.Hours, sTime.Minutes, sTime.Seconds);
+
+        // Print timestamp
+        printf("%s", timestamp);
+
         va_start(args, format);
         vprintf(format, args);  // Use vprintf to handle variable arguments
         va_end(args);
