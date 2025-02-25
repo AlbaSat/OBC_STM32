@@ -154,33 +154,40 @@ Modify the following sections only.
 
 ## Contributing
 
-We welcome contributions from the community! To contribute:
+We welcome contributions from the team! Here's how our development workflow works:
 
-1. **Fork the Repository:**
-   - Click on the "Fork" button at the top-right corner of this page.
-
-2. **Create a New Branch:**
+1. **Use the Development Branch:**
+   - All team members can push directly to the `CUBE_IDE_auto_code_dev` branch.
    ```bash
-   git checkout -b feature/YourFeatureName
+   git checkout CUBE_IDE_auto_code_dev
    ```
 
-3. **Make Your Changes:**
-   - Implement your feature or bug fix.
+2. **Make Your Changes:**
+   - Implement your feature or bug fix in the development branch.
+   - You can create local feature branches if needed, but ultimately push to `CUBE_IDE_auto_code_dev`.
 
-4. **Commit Your Changes:**
+3. **Commit Your Changes:**
    ```bash
    git commit -m "Description of your changes"
    ```
 
-5. **Push to Your Fork:**
+4. **Push to Development:**
    ```bash
-   git push origin feature/YourFeatureName
+   git push origin CUBE_IDE_auto_code_dev
    ```
 
-6. **Open a Pull Request:**
-   - Navigate to the original repository and open a pull request detailing your changes.
+5. **Code Review and Merge Process:**
+   - Alessandro and Marco will periodically review changes in the development branch.
+   - After review, they will create pull requests from `CUBE_IDE_auto_code_dev` to the master branch.
+   - Only Alessandro and Marco have permissions to merge changes into the master branch.
 
-Please ensure your contributions adhere to the project's coding standards and include appropriate documentation.
+6. **Stay Updated:**
+   - Frequently pull from the development branch to keep your local copy updated with other team members' changes.
+   ```bash
+   git pull origin CUBE_IDE_auto_code_dev
+   ```
+
+Please ensure your contributions adhere to the project's coding standards and include appropriate documentation. If you have any questions about this workflow, please contact Alessandro or Marco.
 
 ## License
 
@@ -190,10 +197,10 @@ This project is licensed under the [MIT License](LICENSE).
 
 For questions, suggestions, or support, please reach out to:
 
-- **Name:** Alessandro Balzan, Marco Tomasini, Gianluca Pianta ...
-- **Email:** balzanalessandro2001@gmail.com, ...
+- **Name:** Alessandro Balzan, Marco Tomasini
+- **Email:** balzanalessandro2001@gmail.com, marcotomma.marcotomma@gmail.com
 - **Organization:** Alba CubeSat
-- **GitHub:** https://github.com/alebal123bal(https://github.com/yourusername)
+- **GitHub:** https://github.com/alebal123bal, https://github.com/MarcoTomma98
 
 ---
 
