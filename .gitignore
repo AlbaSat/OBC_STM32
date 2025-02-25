@@ -22,4 +22,4 @@ objects.list
 sources.list
 
 # Ignore all settings
-.settings
+.settings/
