@@ -21,5 +21,5 @@ makefile
 objects.list
 sources.list
 
-# Language settings
-.settings/language.settings.xml
+# Ignore all settings
+.settings
