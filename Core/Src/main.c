@@ -250,6 +250,46 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
+  struct Subsystems { // Statuses and flags of the subsystems of the satellite
+
+      enum Cubesat_Mode { // Modes of the satellite
+        starting,
+        rebooting,
+        nominal,
+        safe,
+        error,
+        warning
+      };
+      
+      struct ADCS { // Attitude Determination and Control System
+        enum ADCS_Mode {
+          DETUMBLING,
+          NOMINAL,
+          SAFE,
+          COARSE,
+          POINTING,
+          PRECISE,
+        }
+        bool isEssential;
+      }
+
+      struct EPS { // Electrical Power System
+        bool isEssential;
+      }
+
+      struct TCS { // Thermal Control System
+        bool isEssential;
+      }
+
+      struct TTC { // Telemetry, Tracking, and Command
+        bool isEssential;
+      }
+
+      struct OBC { // OnBoard Computer
+        bool isEssential;
+      }
+  };
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
