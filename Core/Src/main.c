@@ -250,6 +250,30 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
+
+  // Single Payload Struct  
+  typedef enum { ON, OFF, WARNING, PERROR } payloadStatus;
+  typedef struct {
+    char[50] data;
+    payloadStatus status = OFF;
+  } QPL;
+  typedef struct {
+    char[50] data;
+    payloadStatus status = OFF;
+  } IS;
+  typedef struct {
+    char[50] data;
+    payloadStatus status = OFF;
+  } MVS;
+
+  // Payload struct 
+  typedef struct {    
+    QPL _qpl;
+    IS _is;
+    MVS _mvs;
+  } Payloads;
+
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
