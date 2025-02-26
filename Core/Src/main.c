@@ -309,17 +309,17 @@ int main(void)
 
     struct QPL {
       char[50] data;
-      enum payloadStatus status = OFF;
+      enum payloadStatus status;
     };
 
     struct IS {
       char[50] data;
-      enum payloadStatus status = OFF;
+      enum payloadStatus status;
     };
 
     struct MVS {
       char[50] data;
-      enum payloadStatus status = OFF;
+      enum payloadStatus status;
     };
 
   } Payloads;
