@@ -250,45 +250,50 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
-  struct Subsystems { // Statuses and flags of the subsystems of the satellite
+  // Statuses and flags of the subsystems of the satellite
+  typedef struct { 
 
-      enum Cubesat_Mode { // Modes of the satellite
+      // Modes of the satellite
+      typedef enum { 
         starting,
         rebooting,
         nominal,
         safe,
         error,
         warning
-      };
-      
-      struct ADCS { // Attitude Determination and Control System
-        enum ADCS_Mode {
+      } Cubesat_Mode;
+
+      // Attitude Determination and Control System
+      typedef struct { 
+        typedef enum {
           DETUMBLING,
           NOMINAL,
           SAFE,
           COARSE,
           POINTING,
           PRECISE,
-        }
+        } ADCS_Mode;
         bool isEssential;
-      }
+      } ADCS;
 
-      struct EPS { // Electrical Power System
+      // Electrical Power System
+      typedef struct { 
         bool isEssential;
-      }
+      } EPS;
 
-      struct TCS { // Thermal Control System
+      // Thermal Control System
+      typedef struct { 
         bool isEssential;
-      }
+      } TCS;
 
-      struct TTC { // Telemetry, Tracking, and Command
+      typedef struct { // Telemetry, Tracking, and Command
         bool isEssential;
-      }
+      } TTC;
 
-      struct OBC { // OnBoard Computer
+      typedef struct { // OnBoard Computer
         bool isEssential;
-      }
-  };
+      } OBC;
+  }  Subsystems;
 
 
   // Single Payload Struct  
