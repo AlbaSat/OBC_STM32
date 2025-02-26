@@ -298,7 +298,7 @@ int main(void)
   } Subsystems;
 
   // Payload struct 
-  typedef struct {
+  typedef struct {  
     enum payloadStatus
     {
       ON,
@@ -309,17 +309,17 @@ int main(void)
 
     struct QPL {
       char[50] data;
-      payloadStatus status = OFF;
+      enum payloadStatus status = OFF;
     };
 
     struct IS {
       char[50] data;
-      payloadStatus status = OFF;
+      enum payloadStatus status = OFF;
     };
 
     struct MVS {
       char[50] data;
-      payloadStatus status = OFF;
+      enum payloadStatus status = OFF;
     };
 
   } Payloads;
