@@ -251,71 +251,77 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   // Statuses and flags of the subsystems of the satellite
-  typedef struct { 
-
-      // Modes of the satellite
-      typedef enum { 
-        starting,
-        rebooting,
-        nominal,
-        safe,
-        error,
-        warning
-      } Cubesat_Mode;
-
-      // Attitude Determination and Control System
-      typedef struct { 
-        typedef enum {
-          DETUMBLING,
-          NOMINAL,
-          SAFE,
-          COARSE,
-          POINTING,
-          PRECISE,
-        } ADCS_Mode;
-        bool isEssential;
-      } ADCS;
-
-      // Electrical Power System
-      typedef struct { 
-        bool isEssential;
-      } EPS;
-
-      // Thermal Control System
-      typedef struct { 
-        bool isEssential;
-      } TCS;
-
-      typedef struct { // Telemetry, Tracking, and Command
-        bool isEssential;
-      } TTC;
-
-      typedef struct { // OnBoard Computer
-        bool isEssential;
-      } OBC;
-  }  Subsystems;
-
-
-  // Single Payload Struct  
-  typedef enum { ON, OFF, WARNING, PERROR } payloadStatus;
   typedef struct {
-    char[50] data;
-    payloadStatus status = OFF;
-  } QPL;
-  typedef struct {
-    char[50] data;
-    payloadStatus status = OFF;
-  } IS;
-  typedef struct {
-    char[50] data;
-    payloadStatus status = OFF;
-  } MVS;
+
+    // Modes of the satellite
+    enum Cubesat_Mode {
+      STARTING,
+      REBOOTING,
+      NOMINAL,
+      SAFE,
+      GERROR, // General error
+      WARNING
+    };
+    
+    // Attitude Determination and Control System
+    struct ADCS { 
+      enum ADCS_Mode {
+        DETUMBLING,
+        NOMINAL,
+        SAFE,
+        COARSE,
+        POINTING,
+        PRECISE,
+      }
+      bool isEssential;
+    }
+
+    // Electrical Power System
+    struct EPS { 
+      bool isEssential;
+    }
+
+    // Thermal Control System
+    struct TCS { 
+      bool isEssential;
+    }
+
+    // Telemetry, Tracking, and Command
+    struct TTC { 
+      bool isEssential;
+    }
+
+    // OnBoard Computer
+    struct OBC { 
+      bool isEssential;
+    }
+  } Subsystems;
 
   // Payload struct 
-  typedef struct {    
-    QPL _qpl;
-    IS _is;
-    MVS _mvs;
+  typedef struct {
+    enum payloadStatus
+    {
+      ON,
+      OFF,
+      WARNING,
+      GERROR // General error
+    };
+
+    struct QPL {
+      char[50] data;
+      payloadStatus status = OFF;
+    };
+
+    struct IS {
+      char[50] data;
+      payloadStatus status = OFF;
+    };
+
+    struct MVS {
+      char[50] data;
+      payloadStatus status = OFF;
+    };
+
   } Payloads;
 
 
