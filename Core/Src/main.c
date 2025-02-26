@@ -261,7 +261,7 @@ int main(void)
       SAFE,
       GERROR, // General error
       WARNING
-    };
+    }cubesat_mode;
     
     // Attitude Determination and Control System
     struct ADCS { 
@@ -272,59 +272,59 @@ int main(void)
         ADCS_COARSE,
         ADCS_POINTING,
         ADCS_PRECISE,
-      };
+      }mode;
       bool isEssential;
-    };
+    }adcs;
 
     // Electrical Power System
     struct EPS { 
       bool isEssential;
-    };
+    }eps;
 
     // Thermal Control System
     struct TCS { 
       bool isEssential;
-    };
+    }tcs;
 
     // Telemetry, Tracking, and Command
     struct TTC { 
       bool isEssential;
-    };
+    }ttc;
 
     // OnBoard Computer
     struct OBC { 
       bool isEssential;
-    };
+    }obc;
   } Subsystems;
 
   // Payload struct
   typedef struct
   {
-    enum payloadStatus
+    enum Payload_Status
     {
       PAYLOAD_ON,
       PAYLOAD_OFF,
       PAYLOAD_WARNING,
       PAYLOAD_GERROR // General error
-    };
+    }payload_status;
 
     struct QPL
     {
       char data[50];
-      enum payloadStatus status;
-    };
+      enum Payload_Status status;
+    }qpl;
 
     struct IS
     {
       char data[50];
-      enum payloadStatus status;
-    };
+      enum Payload_Status status;
+    }is;
 
     struct MVS
     {
       char data[50];
-      enum payloadStatus status;
-    };
+      enum Payload_Status status;
+    }mvs;
 
   } Payloads;
 
