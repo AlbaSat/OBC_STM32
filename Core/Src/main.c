@@ -272,29 +272,29 @@ int main(void)
         COARSE,
         POINTING,
         PRECISE,
-      }
+      };
       bool isEssential;
-    }
+    };
 
     // Electrical Power System
     struct EPS { 
       bool isEssential;
-    }
+    };
 
     // Thermal Control System
     struct TCS { 
       bool isEssential;
-    }
+    };
 
     // Telemetry, Tracking, and Command
     struct TTC { 
       bool isEssential;
-    }
+    };
 
     // OnBoard Computer
     struct OBC { 
       bool isEssential;
-    }
+    };
   } Subsystems;
 
   // Payload struct 
