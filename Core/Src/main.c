@@ -308,17 +308,17 @@ int main(void)
     };
 
     struct QPL {
-      char[50] data;
+      char data[50];
       enum payloadStatus status;
     };
 
     struct IS {
-      char[50] data;
+      char data[50];
       enum payloadStatus status;
     };
 
     struct MVS {
-      char[50] data;
+      char data[50];
       enum payloadStatus status;
     };
 
