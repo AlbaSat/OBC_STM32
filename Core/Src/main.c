@@ -265,13 +265,13 @@ int main(void)
     
     // Attitude Determination and Control System
     struct ADCS { 
-      enum ADCS_Mode {
-        DETUMBLING,
-        NOMINAL,
-        SAFE,
-        COARSE,
-        POINTING,
-        PRECISE,
+      enum Mode {
+        ADCS_DETUMBLING,
+        ADCS_NOMINAL,
+        ADCS_SAFE,
+        ADCS_COARSE,
+        ADCS_POINTING,
+        ADCS_PRECISE,
       };
       bool isEssential;
     };
@@ -297,33 +297,36 @@ int main(void)
     };
   } Subsystems;
 
-  // Payload struct 
-  typedef struct {  
+  // Payload struct
+  typedef struct
+  {
     enum payloadStatus
     {
-      ON,
-      OFF,
-      WARNING,
-      GERROR // General error
+      PAYLOAD_ON,
+      PAYLOAD_OFF,
+      PAYLOAD_WARNING,
+      PAYLOAD_GERROR // General error
     };
 
-    struct QPL {
+    struct QPL
+    {
       char data[50];
       enum payloadStatus status;
     };
 
-    struct IS {
+    struct IS
+    {
       char data[50];
       enum payloadStatus status;
     };
 
-    struct MVS {
+    struct MVS
+    {
       char data[50];
       enum payloadStatus status;
     };
 
   } Payloads;
-
 
   /* USER CODE END 1 */
 
